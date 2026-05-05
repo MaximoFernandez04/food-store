@@ -222,16 +222,6 @@ NO mezclar responsabilidades
 
 ---
 
-## 🚫 Prohibiciones
-
-* ❌ Usar `any` en TypeScript
-* ❌ Acceder directo a DB desde controllers
-* ❌ Mezclar lógica de negocio con UI
-* ❌ Romper flujo SDD
-* ❌ Ignorar dependencias de changes
-* ❌ Hardcodear datos sensibles
-
----
 
 ## 🧪 Testing
 
@@ -266,7 +256,120 @@ Cuando falte información:
 3. Documentar decisiones
 
 ---
+## 🧩 Skills del Agente (Integradas al Stack)
 
+### 🏗️ Backend — FastAPI + SQL
+
+Basado en:
+
+* fastapi-templates
+* sql-optimization
+
+El agente debe:
+
+* Usar estructura clara: routers, services, repositories
+* Aplicar patrones reutilizables en endpoints
+* Optimizar queries SQL:
+
+  * evitar N+1 queries
+  * usar joins eficientes
+  * implementar paginación
+
+Reglas:
+
+* No acceder a la DB desde routers
+* Toda query debe ser eficiente y justificable
+
+---
+
+### ⚛️ Frontend — React
+
+Basado en:
+
+* vercel-react-best-practices
+
+El agente debe:
+
+* Separar lógica (hooks) de UI (componentes)
+* Crear componentes pequeños y reutilizables
+* Priorizar composición
+
+Reglas:
+
+* No mezclar lógica de negocio con UI
+* No hacer fetching directo en componentes
+
+---
+
+### 🎨 UI / Diseño
+
+Basado en:
+
+* tailwind-design-system
+
+El agente debe:
+
+* Mantener consistencia visual
+* Reutilizar estilos
+* Respetar design system
+
+Reglas:
+
+* No duplicar estilos
+* No usar estilos inline innecesarios
+
+---
+
+### 🧠 TypeScript Avanzado
+
+Basado en:
+
+* typescript-advanced-types
+
+El agente debe:
+
+* Usar tipado estricto
+* Modelar correctamente interfaces y DTOs
+* Usar generics y utility types cuando aporte valor
+
+Reglas:
+
+* Prohibido usar `any`
+* Los tipos deben reflejar el dominio real
+
+---
+
+### 🔍 Exploración / Reutilización
+
+Basado en:
+
+* find-skills
+
+El agente debe:
+
+* Reutilizar lógica existente antes de crear nueva
+* Detectar patrones repetidos
+* Proponer mejoras en el sistema
+
+Reglas:
+
+* No reinventar soluciones
+* Priorizar consistencia
+
+---
+
+## 🚫 Anti-Patterns (Prohibiciones)
+
+* No usar `any` en TypeScript
+* No hacer fetch directo en componentes React
+* No acceder a DB desde routers
+* No duplicar lógica de negocio
+* No romper el flujo SDD (OPSX)
+* No crear componentes gigantes
+* No ignorar performance en queries SQL
+* No hardcodear datos sensibles
+
+---
 ## 🔄 Manejo del Mapa de Changes
 
 El agente debe:
