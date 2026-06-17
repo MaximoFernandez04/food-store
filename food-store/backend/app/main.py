@@ -14,12 +14,14 @@ from app.core.rate_limit import limiter
 from app.modules.auth.router import router as auth_router
 from app.modules.categorias.router import router as categorias_router
 from app.modules.direcciones.router import router as direcciones_router
+from app.modules.pedidos.router import router as pedidos_router
 from app.modules.productos.router import ingredientes_router, router as productos_router
 
 # Importa todos los módulos con modelos SQLModel para que la metadata
 # (usada por Alembic y por create_all en entornos de test) los conozca.
 from app.modules.categorias import model as _categorias_model  # noqa: F401
 from app.modules.direcciones import model as _direcciones_model  # noqa: F401
+from app.modules.pedidos import model as _pedidos_model  # noqa: F401
 from app.modules.productos import model as _productos_model  # noqa: F401
 from app.modules.refreshtokens import model as _refreshtokens_model  # noqa: F401
 from app.modules.usuarios import model as _usuarios_model  # noqa: F401
@@ -57,6 +59,7 @@ app.include_router(categorias_router)
 app.include_router(productos_router)
 app.include_router(ingredientes_router)
 app.include_router(direcciones_router)
+app.include_router(pedidos_router)
 
 
 @app.get("/health")

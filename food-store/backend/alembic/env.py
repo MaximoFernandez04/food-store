@@ -18,6 +18,7 @@ from app.modules.refreshtokens import model as _refreshtokens_model  # noqa: F40
 from app.modules.categorias import model as _categorias_model  # noqa: F401
 from app.modules.productos import model as _productos_model  # noqa: F401
 from app.modules.direcciones import model as _direcciones_model  # noqa: F401
+from app.modules.pedidos import model as _pedidos_model  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
@@ -44,7 +45,9 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     from sqlalchemy import create_engine
 
-    connectable = create_engine(get_url())
+    url = get_url()
+    connect_args = {"client_encoding": "utf8"} if url.startswith("postgresql") else {}
+    connectable = create_engine(url, connect_args=connect_args)
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

@@ -19,6 +19,13 @@ from sqlmodel import Session
 from app.core.database import engine
 from app.modules.categorias.repository import CategoriaRepository
 from app.modules.direcciones.repository import DireccionRepository
+from app.modules.pedidos.repository import (
+    DetallePedidoRepository,
+    EstadoPedidoRepository,
+    FormaPagoRepository,
+    HistorialRepository,
+    PedidoRepository,
+)
 from app.modules.productos.repository import IngredienteRepository, ProductoRepository
 from app.modules.refreshtokens.repository import RefreshTokenRepository
 from app.modules.usuarios.repository import UsuarioRepository
@@ -33,6 +40,11 @@ class UnitOfWork:
         self.productos = ProductoRepository(self.session)
         self.ingredientes = IngredienteRepository(self.session)
         self.direcciones = DireccionRepository(self.session)
+        self.pedidos = PedidoRepository(self.session)
+        self.detalles = DetallePedidoRepository(self.session)
+        self.historial = HistorialRepository(self.session)
+        self.estados_pedido = EstadoPedidoRepository(self.session)
+        self.formas_pago = FormaPagoRepository(self.session)
 
     def __enter__(self) -> "UnitOfWork":
         return self

@@ -16,7 +16,16 @@ from sqlmodel import Session, create_engine
 
 from app.core.config import settings
 
-engine = create_engine(settings.database_url, echo=False, pool_pre_ping=True)
+_connect_args = (
+    {"client_encoding": "utf8"} if settings.database_url.startswith("postgresql") else {}
+)
+
+engine = create_engine(
+    settings.database_url,
+    echo=False,
+    pool_pre_ping=True,
+    connect_args=_connect_args,
+)
 
 
 def get_session() -> Generator[Session, None, None]:

@@ -21,6 +21,19 @@ class ProductoRepository(BaseRepository[Producto]):
             return None
         return producto
 
+    def get_by_id_for_update(self, entity_id: int) -> Optional[Producto]:
+        """Bloquea la fila (SELECT ... FOR UPDATE) para validar/descontar
+        stock de forma segura ante condiciones de carrera (RN-PE04). En
+        SQLite (usado en tests locales) with_for_update() es un no-op
+        silencioso; en Postgres sí bloquea la fila hasta el commit/rollback
+        de la transacción."""
+        statement = (
+            select(Producto)
+            .where(Producto.id == entity_id, Producto.deleted_at.is_(None))
+            .with_for_update()
+        )
+        return self.session.exec(statement).first()
+
     def get_by_nombre(self, nombre: str) -> Optional[Producto]:
         statement = select(Producto).where(
             Producto.nombre == nombre, Producto.deleted_at.is_(None)
