@@ -19,6 +19,7 @@ from app.modules.categorias import model as _categorias_model  # noqa: F401
 from app.modules.productos import model as _productos_model  # noqa: F401
 from app.modules.direcciones import model as _direcciones_model  # noqa: F401
 from app.modules.pedidos import model as _pedidos_model  # noqa: F401
+from app.modules.pagos import model as _pagos_model  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

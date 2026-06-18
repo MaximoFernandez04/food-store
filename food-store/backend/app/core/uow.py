@@ -26,6 +26,7 @@ from app.modules.pedidos.repository import (
     HistorialRepository,
     PedidoRepository,
 )
+from app.modules.pagos.repository import PagoRepository
 from app.modules.productos.repository import IngredienteRepository, ProductoRepository
 from app.modules.refreshtokens.repository import RefreshTokenRepository
 from app.modules.usuarios.repository import UsuarioRepository
@@ -45,6 +46,7 @@ class UnitOfWork:
         self.historial = HistorialRepository(self.session)
         self.estados_pedido = EstadoPedidoRepository(self.session)
         self.formas_pago = FormaPagoRepository(self.session)
+        self.pagos = PagoRepository(self.session)
 
     def __enter__(self) -> "UnitOfWork":
         return self
