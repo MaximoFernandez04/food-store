@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -50,6 +51,7 @@ class HistorialRead(BaseModel):
 
 class PedidoRead(BaseModel):
     id: int
+    external_ref: UUID
     estado_codigo: str
     subtotal: Decimal
     costo_envio: Decimal

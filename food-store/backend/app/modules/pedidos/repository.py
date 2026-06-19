@@ -30,6 +30,10 @@ class PedidoRepository(BaseRepository[Pedido]):
         statement = select(Pedido).where(Pedido.id == pedido_id).with_for_update()
         return self.session.exec(statement).first()
 
+    def get_by_external_ref(self, external_ref) -> Optional[Pedido]:
+        statement = select(Pedido).where(Pedido.external_ref == external_ref)
+        return self.session.exec(statement).first()
+
     def search(
         self,
         usuario_id: Optional[int] = None,

@@ -10,6 +10,7 @@ se evita una dependencia cruzada entre productos y pedidos sin necesidad.
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional
+from uuid import UUID, uuid4
 
 from sqlalchemy import ARRAY, Column, Integer
 from sqlmodel import Field, SQLModel
@@ -36,6 +37,9 @@ class Pedido(SQLModel, table=True):
     __tablename__ = "pedido"
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    # UUID público para referenciar el pedido ante MercadoPago (RN-PA09) y
+    # cualquier otro sistema externo, en vez de exponer el id secuencial.
+    external_ref: UUID = Field(default_factory=uuid4, unique=True, index=True)
     usuario_id: int = Field(foreign_key="usuario.id", index=True)
     estado_codigo: str = Field(foreign_key="estado_pedido.codigo", index=True)
     forma_pago_codigo: str = Field(foreign_key="forma_pago.codigo")
