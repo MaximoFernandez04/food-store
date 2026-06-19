@@ -43,7 +43,7 @@ export function DashboardPage() {
       <h1 className="font-display text-2xl font-bold">Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <KpiCard icon={<DollarSign size={18} />} label="Ventas totales" value={`$${data.total_ventas.toFixed(0)}`} />
+        <KpiCard icon={<DollarSign size={18} />} label="Ventas totales" value={`$${Number(data.total_ventas).toFixed(0)}`} />
         <KpiCard icon={<TrendingUp size={18} />} label="Pedidos" value={String(totalPedidos)} />
         <KpiCard icon={<Users size={18} />} label="Usuarios" value={String(data.total_usuarios)} />
         <KpiCard icon={<Sandwich size={18} />} label="Productos" value={String(data.total_productos)} />
