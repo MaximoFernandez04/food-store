@@ -7,8 +7,8 @@ Gestion de Desarrollo de Software. Stack: **FastAPI + SQLModel + PostgreSQL** (b
 
 ## Demo
 
-- Video: _completar link_
-- Repo: _completar link_
+- Video: https://youtu.be/Dmzotj8XaYU
+- Repo: https://github.com/MaximoFernandez04/food-store.git
 
 ## Stack
 
