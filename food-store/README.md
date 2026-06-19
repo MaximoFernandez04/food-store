@@ -1,3 +1,5 @@
+Integrantes: Alex Rodríguez, Ignacio Bevilacqua, Máximo Fernández
+
 # 🍔 Food Store
 
 Sistema de gestión de pedidos de comida — Trabajo Práctico Integrador,
