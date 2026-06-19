@@ -1,145 +1,159 @@
-# Food Store — Repositorio Base
+# 🍔 Food Store
 
-Sistema de e-commerce de productos alimenticios desarrollado con **Spec-Driven Development (SDD)** usando OPSX y Claude Code.
+Sistema de gestión de pedidos de comida — Trabajo Práctico Integrador,
+Programación 4. Stack: **FastAPI + SQLModel + PostgreSQL** (backend) y
+**React + TypeScript + Vite** (frontend), con pagos integrados vía
+**MercadoPago**.
 
----
+## Demo
 
-## Documentación del sistema
+- Video: _completar link_
+- Repo: _completar link_
 
-Antes de escribir una línea de código, leé los tres documentos en `docs/`:
+## Stack
 
-| Archivo | Contenido |
-|---------|-----------|
-| `docs/Descripcion.txt` | Visión general, actores del sistema y stack tecnológico |
-| `docs/Integrador.txt` | Arquitectura en capas, ERD, API REST y patrones de diseño |
-| `docs/Historias_de_usuario.txt` | US-000 a US-076 con criterios de aceptación y reglas de negocio |
+| Capa | Tecnología |
+|---|---|
+| Backend | FastAPI, SQLModel, PostgreSQL 15+, Alembic, Passlib (bcrypt), slowapi, SDK MercadoPago |
+| Frontend | React 18, TypeScript, Vite, Tailwind, Zustand, TanStack Query, TanStack Form, recharts, `@mercadopago/sdk-react` |
+| Arquitectura backend | Router → Service → Unit of Work → Repository → Model, por feature |
+| Arquitectura frontend | Feature-Sliced Design |
 
-Estos documentos son la fuente de verdad del sistema. El agente los lee antes de cada propuesta.
+## Requisitos
 
----
-
-## Stack tecnológico
-
-**Backend**: FastAPI · SQLModel · PostgreSQL · Alembic · bcrypt · python-jose · slowapi · MercadoPago SDK  
-**Frontend**: React · TypeScript · Vite · TanStack Query · TanStack Form · Zustand · Axios · Tailwind CSS · Recharts
-
----
-
-## Setup del entorno de desarrollo
-
-### Requisitos previos
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL 15+
-- Claude Code: `npm install -g @anthropic-ai/claude-code`
-- OpenSpec CLI: `npm install -g @fission-ai/openspec`
+- PostgreSQL 15+ corriendo localmente (con [pgAdmin](https://www.pgadmin.org/) o el cliente `psql` para crear la base)
+- Una cuenta de developer de MercadoPago (gratis) para las credenciales de test
 
-### 1. Clonar e inicializar
-
-```bash
-git clone <url-del-repo> food-store
-cd food-store
-```
-
-### 2. Inicializar OpenSpec
-
-```bash
-npx @fission-ai/openspec@latest init
-```
-
-Esto genera la carpeta `openspec/` donde van a vivir todos los artefactos del proyecto.
-
-### 3. Backend
+## 1. Backend
 
 ```bash
 cd backend
-cp .env.example .env
-# Completar las variables de entorno en .env
-
 python -m venv .venv
-source .venv/bin/activate   # Linux/Mac
-.venv\Scripts\activate      # Windows
-
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+
+cp .env.example .env
+# completar DATABASE_URL, SECRET_KEY, MP_ACCESS_TOKEN y MP_PUBLIC_KEY en .env
+```
+
+Crear la base de datos vacía (el nombre tiene que coincidir con `DATABASE_URL`).
+Si tenés `psql` en el PATH:
+
+```bash
+psql -U postgres -c "CREATE DATABASE foodstore_db;"
+```
+
+Si no (frecuente en Windows, el instalador de Postgres no siempre lo
+agrega al PATH), hacelo desde **pgAdmin**: conectate al servidor → click
+derecho en **Databases** → **Create** → **Database...** → nombre
+`foodstore_db`.
+
+```bash
 alembic upgrade head
 python -m app.db.seed
+
 uvicorn app.main:app --reload
 ```
 
-API disponible en `http://localhost:8000`  
-Documentación Swagger en `http://localhost:8000/docs`
+Backend en `http://localhost:8000`. Documentación interactiva en
+`http://localhost:8000/docs` (Swagger) y `/redoc`.
 
-### 4. Frontend
+### Variables de entorno del backend
+
+Ver `.env.example` para la lista completa. Las más importantes:
+
+| Variable | Para qué |
+|---|---|
+| `DATABASE_URL` | conexión a PostgreSQL |
+| `SECRET_KEY` | firma de los JWT (mínimo 32 caracteres) |
+| `MP_ACCESS_TOKEN` | credencial **privada** de MercadoPago, solo backend |
+| `MP_PUBLIC_KEY` | credencial pública de MercadoPago (se repite en el frontend) |
+| `CORS_ORIGINS` | por defecto `["http://localhost:5173"]`, ya coincide con el puerto default de Vite |
+
+Las credenciales de MercadoPago (`TEST-...`) se generan gratis en el
+[panel de developers de MercadoPago](https://www.mercadopago.com.ar/developers/panel/app),
+creando una aplicación de prueba (solución: **Pagos online** → **Checkout API**, sin plataforma de ecommerce).
+
+## 2. Frontend
 
 ```bash
 cd frontend
-cp .env.example .env
-# Completar VITE_API_URL=http://localhost:8000
-
 npm install
+
+cp .env.example .env
+# VITE_API_URL=http://localhost:8000
+# VITE_MP_PUBLIC_KEY=la misma Public Key que pusiste en el backend
+
 npm run dev
 ```
 
-App disponible en `http://localhost:5173`
+Frontend en `http://localhost:5173`.
 
----
+## 3. Usuario administrador (seed)
 
-## Flujo de desarrollo con OPSX
-
-Todo cambio al sistema sigue este ciclo:
+El script de seed crea un usuario ADMIN para entrar directo al panel:
 
 ```
-/opsx:explore   →  pensar antes de comprometerse (opcional)
-/opsx:propose   →  generar propuesta + diseño + tareas
-/opsx:apply     →  implementar tarea por tarea
-/opsx:archive   →  sincronizar specs y cerrar el change
+email:    admin@foodstore.com
+password: Admin1234!
 ```
 
-### Orden de implementación
+**Cambiar esta contraseña antes de cualquier uso real** — el seed la deja así a propósito para que la corrección pueda entrar sin pedirte nada.
+
+El catálogo arranca vacío a propósito (el seed solo carga roles, estados
+de pedido, formas de pago y este usuario) — cargá categorías y productos
+desde **Panel → Categorías / Productos** una vez logueado como admin.
+
+## 4. Probar un pago con MercadoPago (sandbox)
+
+Con el backend y el frontend corriendo: agregá algo al carrito → checkout
+→ "Tarjeta (MercadoPago)". En el sandbox, **el resultado del pago lo
+decide el nombre del titular que pongas, no la tarjeta**:
+
+| Resultado | Número de tarjeta | Vencimiento | CVV | Titular | DNI |
+|---|---|---|---|---|---|
+| Pago aprobado | 4509 9535 6623 3704 (Visa) | 11/30 | 123 | `APRO` | 12345678 |
+| Rechazado (error general) | 4509 9535 6623 3704 (Visa) | 11/30 | 123 | `OTHE` | 12345678 |
+| Pendiente | 4509 9535 6623 3704 (Visa) | 11/30 | 123 | `CONT` | — |
+
+(Lista completa de códigos en la [documentación oficial](https://www.mercadopago.com.ar/developers/es/docs/your-integrations/test/cards) — cambia de tanto en tanto, conviene chequearla si algo no da el resultado esperado.)
+
+Si el pago se aprueba, el pedido pasa a `CONFIRMADO` automáticamente. Para
+que el **webhook** de MercadoPago le llegue a tu backend en `localhost`
+(confirmación 100% async, no por la respuesta directa del POST), necesitás
+exponerlo con algo como [ngrok](https://ngrok.com/) y configurar esa URL
+pública como `MP_NOTIFICATION_URL`. Sin eso, el pago se procesa igual y
+el resultado se ve por la respuesta directa de `POST /pagos/crear` — la
+única diferencia es que la confirmación automática *por webhook* no se
+dispara en local.
+
+## 5. Estructura del repo
 
 ```
-us-000-setup               ← infraestructura base (Sprint 0)
-us-001-auth                ← JWT · RBAC · refresh tokens
-us-002-categorias          ← catálogo jerárquico
-us-003-productos           ← CRUD · stock · ingredientes
-us-004-carrito             ← estado client-side con Zustand
-us-005-pedidos             ← UoW · FSM · audit trail
-us-006-pagos-mercadopago   ← checkout · webhooks IPN
-us-007-admin               ← panel · métricas
-us-008-direcciones         ← direcciones de entrega
+food-store/
+  backend/    FastAPI
+  frontend/   React
+  openspec/   documentación de cada feature (proposal + tasks) siguiendo SDD
 ```
 
----
+## 6. Roles y permisos
 
-## Variables de entorno
+| Rol | Puede |
+|---|---|
+| ADMIN | todo |
+| STOCK | ver productos, actualizar stock y disponibilidad |
+| PEDIDOS | ver y avanzar el estado de los pedidos |
+| CLIENT | catálogo, carrito, sus propios pedidos |
 
-Crear `backend/.env` a partir de `backend/.env.example`:
+## 7. Limitaciones conocidas
 
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/foodstore
-SECRET_KEY=tu-clave-secreta-de-64-caracteres-minimo
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-MP_ACCESS_TOKEN=TEST-tu-token-de-mercadopago
-MP_PUBLIC_KEY=TEST-tu-public-key-de-mercadopago
-CORS_ORIGINS=http://localhost:5173
-```
-
-Crear `frontend/.env` a partir de `frontend/.env.example`:
-
-```env
-VITE_API_URL=http://localhost:8000
-VITE_MP_PUBLIC_KEY=TEST-tu-public-key-de-mercadopago
-```
-
----
-
-## Convenciones de commits
-
-```
-feat(modulo): descripción del cambio
-fix(modulo): descripción del bug corregido
-refactor(modulo): descripción del refactor
-test(modulo): descripción de los tests
-docs(modulo): descripción del cambio en docs
-```
+- No hay tests automatizados (pytest ni de frontend) — quedó fuera por
+  tiempo, no por desconocimiento de cómo escribirlos.
+- El panel admin no tiene gestión de usuarios/roles (sí tiene categorías,
+  productos, stock y pedidos).
+- No se valida la firma/HMAC del webhook de MercadoPago — en producción
+  real haría falta.
+- El motivo de cancelación en el panel admin se pide con un
+  `window.prompt()` en vez de un modal propio.
