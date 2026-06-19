@@ -138,3 +138,9 @@ class IngredienteRepository(BaseRepository[Ingrediente]):
     def get_by_nombre(self, nombre: str) -> Optional[Ingrediente]:
         statement = select(Ingrediente).where(Ingrediente.nombre == nombre)
         return self.session.exec(statement).first()
+
+    def list_activos(self) -> list[Ingrediente]:
+        """Igual que CategoriaRepository.list_activas() — BaseRepository.
+        list_all() es genérico y no filtra soft-delete."""
+        statement = select(Ingrediente).where(Ingrediente.deleted_at.is_(None)).order_by(Ingrediente.nombre)
+        return list(self.session.exec(statement).all())

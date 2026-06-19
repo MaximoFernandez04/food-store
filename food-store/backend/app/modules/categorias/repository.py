@@ -22,6 +22,14 @@ class CategoriaRepository(BaseRepository[Categoria]):
         )
         return list(self.session.exec(statement).all())
 
+    def list_activas(self) -> list[Categoria]:
+        """A diferencia de BaseRepository.list_all() (genérico, sin
+        filtros), esta sí respeta soft-delete — es la que debe usar
+        cualquier GET de listado (sección 5: 'todos los GET filtran
+        WHERE deleted_at IS NULL')."""
+        statement = select(Categoria).where(Categoria.deleted_at.is_(None)).order_by(Categoria.nombre)
+        return list(self.session.exec(statement).all())
+
     def list_hijos(self, parent_id: int) -> list[Categoria]:
         statement = select(Categoria).where(
             Categoria.parent_id == parent_id, Categoria.deleted_at.is_(None)

@@ -120,7 +120,7 @@ ingredientes_router = APIRouter(prefix="/api/v1/ingredientes", tags=["ingredient
 @ingredientes_router.get("", response_model=list[IngredienteRead])
 def list_ingredientes():
     with UnitOfWork() as uow:
-        return uow.ingredientes.list_all(limit=500)
+        return uow.ingredientes.list_activos()
 
 
 @ingredientes_router.post("", response_model=IngredienteRead, status_code=status.HTTP_201_CREATED)

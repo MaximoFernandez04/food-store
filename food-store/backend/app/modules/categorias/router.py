@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/v1/categorias", tags=["categorias"])
 @router.get("", response_model=list[CategoriaRead])
 def list_categorias():
     with UnitOfWork() as uow:
-        return uow.categorias.list_all(limit=500)
+        return uow.categorias.list_activas()
 
 
 @router.get("/arbol", response_model=list[CategoriaArbolNode])
