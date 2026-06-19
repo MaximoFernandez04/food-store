@@ -17,6 +17,7 @@ from app.modules.direcciones.router import router as direcciones_router
 from app.modules.pagos.router import router as pagos_router
 from app.modules.pedidos.router import router as pedidos_router
 from app.modules.productos.router import ingredientes_router, router as productos_router
+from app.modules.admin.router import router as admin_router
 
 # Importa todos los módulos con modelos SQLModel para que la metadata
 # (usada por Alembic y por create_all en entornos de test) los conozca.
@@ -63,7 +64,7 @@ app.include_router(ingredientes_router)
 app.include_router(direcciones_router)
 app.include_router(pedidos_router)
 app.include_router(pagos_router)
-
+app.include_router(admin_router)
 
 @app.get("/health")
 def health():
