@@ -37,9 +37,36 @@ def update_producto(uow: UnitOfWork, producto_id: int, data: ProductoUpdate) -> 
         raise AppError(404, "Producto no encontrado", "NOT_FOUND")
 
     updates = data.model_dump(exclude_unset=True)
+    # categoria_ids/ingrediente_ids no son columnas de Producto: son
+    # relaciones M:N que se manejan aparte (reemplazo completo del set).
+    nuevas_categorias = updates.pop("categoria_ids", None)
+    nuevos_ingredientes = updates.pop("ingrediente_ids", None)
+
     for key, value in updates.items():
         setattr(producto, key, value)
-    return uow.productos.update(producto)
+    uow.productos.update(producto)
+
+    if nuevas_categorias is not None:
+        for cat_id in nuevas_categorias:
+            if not uow.categorias.get_by_id(cat_id):
+                raise AppError(404, f"Categoría {cat_id} no existe", "CATEGORIA_NOT_FOUND")
+        actuales = {c.id for c in uow.productos.categorias_de(producto.id)}
+        for cat_id in actuales - set(nuevas_categorias):
+            uow.productos.quitar_categoria(producto.id, cat_id)
+        for i, cat_id in enumerate(c for c in nuevas_categorias if c not in actuales):
+            uow.productos.asignar_categoria(producto.id, cat_id, es_principal=(i == 0 and not actuales))
+
+    if nuevos_ingredientes is not None:
+        for ing_id in nuevos_ingredientes:
+            if not uow.ingredientes.get_by_id(ing_id):
+                raise AppError(404, f"Ingrediente {ing_id} no existe", "INGREDIENTE_NOT_FOUND")
+        actuales_ing = {i.id for i in uow.productos.ingredientes_de(producto.id)}
+        for ing_id in actuales_ing - set(nuevos_ingredientes):
+            uow.productos.quitar_ingrediente(producto.id, ing_id)
+        for ing_id in set(nuevos_ingredientes) - actuales_ing:
+            uow.productos.asignar_ingrediente(producto.id, ing_id)
+
+    return producto
 
 
 def set_disponibilidad(uow: UnitOfWork, producto_id: int, disponible: bool) -> Producto:

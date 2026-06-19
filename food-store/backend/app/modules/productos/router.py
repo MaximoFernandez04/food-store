@@ -41,7 +41,8 @@ def get_producto(producto_id: int):
         if not producto:
             raise AppError(404, f"Producto {producto_id} no encontrado", "NOT_FOUND")
         ingredientes = uow.productos.ingredientes_de(producto_id)
-        return ProductoDetail(**producto.model_dump(), ingredientes=ingredientes)
+        categorias = uow.productos.categorias_de(producto_id)
+        return ProductoDetail(**producto.model_dump(), ingredientes=ingredientes, categorias=categorias)
 
 
 @router.post("", response_model=ProductoRead, status_code=status.HTTP_201_CREATED)

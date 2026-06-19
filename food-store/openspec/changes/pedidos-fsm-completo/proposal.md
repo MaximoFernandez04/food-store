@@ -17,9 +17,13 @@ cancelación — separarlos en 3 changes habría significado tocar
   detalladas que la tabla simplificada del PDF):
   - El stock se descuenta al CONFIRMAR (no al crear) y se restaura al
     cancelar desde cualquier estado donde ya estaba descontado
-  - PENDIENTE → CONFIRMADO es EXCLUSIVAMENTE automática (la ejecuta
-    `confirmar_por_pago()`, que va a llamar el módulo de pagos — ningún
-    router de pedidos la expone)
+  - PENDIENTE → CONFIRMADO es automática SOLO para forma_pago=MERCADOPAGO
+    (la ejecuta `confirmar_por_pago()`, llamada por el módulo de pagos).
+    Para EFECTIVO/TRANSFERENCIA, que no tienen gateway que dispare un
+    webhook, ADMIN/PEDIDOS puede confirmar manualmente (descuenta stock
+    igual que la vía automática). Corrección post-frontend: la primera
+    versión bloqueaba esta transición incondicionalmente, lo que dejaba
+    sin forma de confirmarse a cualquier pedido que no pagara con MP.
   - Permisos de cancelación distintos según el estado de origen
     (RN-FS08, RN-RB08)
 - `app/db/seed.py` completo: ya no quedan los TODO de EstadoPedido/FormaPago

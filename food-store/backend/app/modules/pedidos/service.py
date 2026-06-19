@@ -113,17 +113,7 @@ def crear_pedido(uow: UnitOfWork, usuario_id: int, data: CrearPedidoRequest) -> 
     return pedido
 
 
-def confirmar_por_pago(uow: UnitOfWork, pedido_id: int) -> Pedido:
-    """Única vía para PENDIENTE -> CONFIRMADO (RN-FS02). La llama el módulo
-    de pagos cuando MercadoPago confirma un pago aprobado — nunca un router
-    de pedidos. usuario_id=None en el historial = transición del Sistema."""
-    pedido = uow.pedidos.get_by_id_for_update(pedido_id)
-    if not pedido:
-        raise AppError(404, "Pedido no encontrado", "NOT_FOUND")
-
-    if pedido.estado_codigo != "PENDIENTE":
-        return pedido  # idempotencia: webhook duplicado, no hacer nada raro
-
+def _descontar_stock(uow: UnitOfWork, pedido: Pedido) -> None:
     detalles = uow.detalles.list_by_pedido(pedido.id)
     for detalle in detalles:
         # RN-FS03/04: descuento atómico; si CUALQUIER producto no tiene
@@ -138,6 +128,20 @@ def confirmar_por_pago(uow: UnitOfWork, pedido_id: int) -> Pedido:
         producto.stock_cantidad -= detalle.cantidad
         uow.productos.update(producto)
 
+
+def confirmar_por_pago(uow: UnitOfWork, pedido_id: int) -> Pedido:
+    """Única vía para PENDIENTE -> CONFIRMADO cuando la forma de pago es
+    MERCADOPAGO (RN-FS02). La llama el módulo de pagos cuando MercadoPago
+    confirma un pago aprobado — nunca un router de pedidos. usuario_id=None
+    en el historial = transición del Sistema."""
+    pedido = uow.pedidos.get_by_id_for_update(pedido_id)
+    if not pedido:
+        raise AppError(404, "Pedido no encontrado", "NOT_FOUND")
+
+    if pedido.estado_codigo != "PENDIENTE":
+        return pedido  # idempotencia: webhook duplicado, no hacer nada raro
+
+    _descontar_stock(uow, pedido)
     _aplicar_transicion(uow, pedido, "CONFIRMADO", usuario_id=None, motivo="Pago aprobado")
     return pedido
 
@@ -153,12 +157,23 @@ def avanzar_estado(
     nuevo_estado = data.nuevo_estado
 
     if nuevo_estado == "CONFIRMADO":
-        # RN-FS02: nadie ejecuta esta transición manualmente, ni ADMIN.
-        raise AppError(
-            403,
-            "PENDIENTE → CONFIRMADO solo ocurre automáticamente por pago aprobado",
-            "MANUAL_CONFIRM_FORBIDDEN",
-        )
+        if pedido.forma_pago_codigo == "MERCADOPAGO":
+            # RN-FS02: para MercadoPago esta transición es EXCLUSIVAMENTE
+            # automática (la dispara el webhook de pago aprobado).
+            raise AppError(
+                403,
+                "Este pedido se paga con MercadoPago: la confirmación es automática al aprobarse el pago",
+                "MANUAL_CONFIRM_FORBIDDEN",
+            )
+        # EFECTIVO/TRANSFERENCIA no tienen gateway que dispare un webhook,
+        # así que el staff confirma a mano que cobró/recibió la transferencia.
+        if estado_actual != "PENDIENTE":
+            raise AppError(400, f"Transición inválida: {estado_actual} → CONFIRMADO", "INVALID_TRANSITION")
+        if not current.has_role(*ROLES_GESTION_PEDIDOS):
+            raise AppError(403, "Requiere rol ADMIN o PEDIDOS", "FORBIDDEN")
+        _descontar_stock(uow, pedido)
+        _aplicar_transicion(uow, pedido, "CONFIRMADO", current.usuario.id, motivo="Pago confirmado manualmente")
+        return pedido
 
     if nuevo_estado not in TRANSICIONES_VALIDAS.get(estado_actual, set()):
         raise AppError(

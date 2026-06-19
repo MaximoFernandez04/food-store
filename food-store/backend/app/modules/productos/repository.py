@@ -3,6 +3,7 @@ from typing import Optional
 from sqlmodel import Session, select
 
 from app.core.base_repository import BaseRepository
+from app.modules.categorias.model import Categoria
 from app.modules.productos.model import (
     Ingrediente,
     Producto,
@@ -97,6 +98,23 @@ class ProductoRepository(BaseRepository[Producto]):
         if rel:
             self.session.delete(rel)
             self.session.flush()
+
+    def quitar_categoria(self, producto_id: int, cat_id: int) -> None:
+        statement = select(ProductoCategoria).where(
+            ProductoCategoria.producto_id == producto_id, ProductoCategoria.cat_id == cat_id
+        )
+        rel = self.session.exec(statement).first()
+        if rel:
+            self.session.delete(rel)
+            self.session.flush()
+
+    def categorias_de(self, producto_id: int) -> list[Categoria]:
+        statement = (
+            select(Categoria)
+            .join(ProductoCategoria, ProductoCategoria.cat_id == Categoria.id)
+            .where(ProductoCategoria.producto_id == producto_id)
+        )
+        return list(self.session.exec(statement).all())
 
     def ingredientes_de(self, producto_id: int) -> list[Ingrediente]:
         statement = (

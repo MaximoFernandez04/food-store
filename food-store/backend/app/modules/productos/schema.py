@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from app.modules.categorias.schema import CategoriaRead
+
 
 class IngredienteCreate(BaseModel):
     nombre: str = Field(min_length=2, max_length=100)
@@ -32,6 +34,13 @@ class ProductoUpdate(BaseModel):
     nombre: Optional[str] = Field(default=None, min_length=2, max_length=150)
     descripcion: Optional[str] = None
     precio_base: Optional[Decimal] = Field(default=None, gt=0, max_digits=10, decimal_places=2)
+    stock_cantidad: Optional[int] = Field(default=None, ge=0)
+    disponible: Optional[bool] = None
+    # Si se manda, REEMPLAZA por completo el set de categorías/ingredientes
+    # asociados (no es un merge incremental) — más simple para el form de
+    # edición del admin, que siempre manda la lista completa actual.
+    categoria_ids: Optional[list[int]] = None
+    ingrediente_ids: Optional[list[int]] = None
 
 
 class DisponibilidadUpdate(BaseModel):
@@ -57,6 +66,7 @@ class ProductoRead(BaseModel):
 
 class ProductoDetail(ProductoRead):
     ingredientes: list[IngredienteRead] = Field(default_factory=list)
+    categorias: list[CategoriaRead] = Field(default_factory=list)
 
 
 class PaginatedProductos(BaseModel):
