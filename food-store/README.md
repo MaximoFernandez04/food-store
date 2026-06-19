@@ -1,7 +1,7 @@
 # 🍔 Food Store
 
 Sistema de gestión de pedidos de comida — Trabajo Práctico Integrador,
-Programación 4. Stack: **FastAPI + SQLModel + PostgreSQL** (backend) y
+Gestion de Desarrollo de Software. Stack: **FastAPI + SQLModel + PostgreSQL** (backend) y
 **React + TypeScript + Vite** (frontend), con pagos integrados vía
 **MercadoPago**.
 
